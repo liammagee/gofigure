@@ -1,5 +1,5 @@
 {
-  "name": "Go Figure",
+  "name": "GoFigure",
   "version": "0.1.0",
   "scripts": {
     "test": "grunt qunit"
