@@ -1,9 +1,6 @@
 {
   "name": "Go Figure",
   "version": "0.1.0",
-  "engines": {
-    "node": ">= 0.6.0"
-  },
   "scripts": {
     "test": "grunt qunit"
   },
@@ -11,3 +8,4 @@
     "grunt": "~0.3.11"
   }
 }
+
