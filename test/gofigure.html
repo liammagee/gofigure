@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+    <title>Go Figure</title>
+
+    <link rel="stylesheet" href="gofigure.css"/>
+
+    <!-- Load local jQuery. This can be overridden with a ?jquery=___ param. -->
+    <script src="../libs/jquery-loader.js"></script>
+    <script src="../libs/beautify.js"></script>
+    <script src="../src/figurestick.js"></script>
+    <script src="gofigure_test.js"></script>
+</head>
+<body>
+
+
+<div id="wrapper">
+    <div id="contentwrap">
+        <div id="content">
+            <div>
+                <h1>GO FIGURE...</h1>
+            </div>
+
+            <canvas width="960px" id="gofigure-canvas"></canvas>
+
+            <div>
+                <input type="radio" name="action" value="run" checked="checked"/><span>run</span>
+                <input type="radio" name="action" value="walk"/><span>walk</span>
+                <input type="radio" name="action" value="expire"/><span>expire</span>
+                <input type="radio" name="action" value="explode"/><span>explode</span>
+                <input type="radio" name="action" value="stand"/><span>stand</span>
+            </div>
+            <div>
+                <input type="checkbox" name="direction"/><span>reverse direction</span>
+            </div>
+            <div>
+                <input type="checkbox" name="exaggerated"/><span>exaggerate figure</span>
+            </div>
+            <div>
+                <input type="checkbox" name="border"/><span>include border</span>
+            </div>
+            <div>
+                <input type="checkbox" name="bounce"/><span>bounce during run</span>
+            </div>
+            <div>
+                <span>frame rate: </span><input type="number" step="50" id="framerate" name="framerate" value="200"/>
+            </div>
+            <div>
+                <span>x increment: </span><input type="number" step="10" id="xshift" name="xshift" value="100"/>
+            </div>
+            <div>
+                frame: <span id="display"></span>
+            </div>
+            <div>
+                <input type="button" value="play" id="play"/>
+                <input type="button" value="step" id="step"/>
+                <input type="button" value="update" id="update"/>
+            </div>
+            <div id="points">
+                figure:
+                <div>
+                    <textarea id="figure-points"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
