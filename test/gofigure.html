@@ -10,6 +10,7 @@
     <!-- Load local jQuery. This can be overridden with a ?jquery=___ param. -->
     <script src="../libs/jquery-loader.js"></script>
     <script src="../libs/beautify.js"></script>
+    <script src="../libs/sylvester.js"></script>
     <script src="../src/figurestick.js"></script>
     <script src="gofigure_test.js"></script>
 </head>
@@ -26,8 +27,9 @@
             <canvas width="960px" id="gofigure-canvas"></canvas>
 
             <div>
-                <input type="radio" name="action" value="run" checked="checked"/><span>run</span>
+                <input type="radio" name="action" value="run" /><span>run</span>
                 <input type="radio" name="action" value="walk"/><span>walk</span>
+                <input type="radio" name="action" value="walk2" checked="checked"/><span>walk2</span>
                 <input type="radio" name="action" value="expire"/><span>expire</span>
                 <input type="radio" name="action" value="explode"/><span>explode</span>
                 <input type="radio" name="action" value="stand"/><span>stand</span>
@@ -45,16 +47,20 @@
                 <input type="checkbox" name="bounce"/><span>bounce during run</span>
             </div>
             <div>
-                <span>frame rate: </span><input type="number" step="50" id="framerate" name="framerate" value="200"/>
+                <span>frame rate: </span><input type="number" step="5" id="framerate" name="framerate" value="10"/>
             </div>
             <div>
-                <span>x increment: </span><input type="number" step="10" id="xshift" name="xshift" value="100"/>
+                <span>x increment: </span><input type="number" step="10" id="xshift" name="xshift" value="20"/>
+            </div>
+            <div>
+                <span>line width: </span><input type="number" step="1" id="linewidth" name="linewidth" value="3"/>
             </div>
             <div>
                 frame: <span id="display"></span>
             </div>
             <div>
                 <input type="button" value="play" id="play"/>
+                <!--<input type="button" value="back" id="step back"/>-->
                 <input type="button" value="step" id="step"/>
                 <input type="button" value="update" id="update"/>
             </div>

@@ -16,6 +16,14 @@
  */
 StickFigure = function(_x, _y, _figureWidth, _figureHeight, _exaggerated) {
 
+    this.Joint = function(_x, _y, _angle) {
+        this.x = _x,
+            this.y = _y,
+            this._angle = _angle;
+
+
+    };
+
     this.drawFigure = function(context) {
         context.beginPath();
 
@@ -76,7 +84,7 @@ StickFigure = function(_x, _y, _figureWidth, _figureHeight, _exaggerated) {
 
 
     this.updateFrame = function() {
-        this.frame = (this.frame == this.maxFrames ? 0 : this.frame + 1);
+        this.frame = (this.frame == this.maxFrames - 1 ? 0 : this.frame + 1);
     }
 
     // Stick figure actions
@@ -244,6 +252,106 @@ StickFigure = function(_x, _y, _figureWidth, _figureHeight, _exaggerated) {
             this.flipHorizontalDirection();
         this.generateCoordinates();
     };
+
+    // Walking
+    this.walk2 = function() {
+        var that = this;
+        this.walkFrame = 0;
+
+        // define the walking frames
+        var baseframe = {
+              h: 90 , t: 90 , n: 90
+
+            , fs: 135 , fe: 120 , fa: 120
+            , bs: 30 , be: 45 , ba: 60
+
+            , fh: 120 , fk: 135 , ff: 60
+            , bh: 60 , bk: 60 , bf: -30
+        };
+
+        /*
+        var frame2 = {
+              h: 6 , t: 6 , n: 6
+
+            , fs: 8 , fe: 7 , fa: 7
+            , bs: 5 , be: 4 , ba: 4
+
+            , fh: 7 , fk: 9 , ff: 2
+            , bh: 5 , bk: 6 , bf: 0
+        };
+        var frame3 = {
+              h: 6 , t: 6 , n: 6
+
+            , fs: 7 , fe: 6 , fa: 5
+            , bs: 6 , be: 5 , ba: 5
+
+            , fh: 5 , fk: 9 , ff: 1
+            , bh: 0 , bk: 7 , bf: 0
+        };
+        var frame4 = {
+              h: 6 , t: 6 , n: 6
+
+            , fs: 5 , fe: 4 , fa: 4
+            , bs: 7 , be: 7 , ba: 7
+
+            , fh: 4 , fk: 8 , ff: 0
+            , bh: 7 , bk: 8 , bf: 1
+        };
+        var frame5 = {
+              h: 6 , t: 6 , n: 6
+
+            , fs: 5 , fe: 4 , fa: 4
+            , bs: 7 , be: 7 , ba: 7
+
+            , fh: 4 , fk: 8 , ff: 0
+            , bh: 7 , bk: 8 , bf: 1
+        };
+        */
+
+
+        var base    = $V([75, 90, 90,   100, 100, 110, 80, 65, 60,   100, 115, 15, 80, 80, -30]);
+        var frame0  = $V([-15, 0, 0,   0, 0, 0, 0, 0, 0,               0, 0, 0, 0, 0, 0            ]);
+        var frame1  = $V([-15, 0, 0,   -5, -5, -5, 5, 5, 10,          -5, 0, -10, 5, 10, 10     ]);
+        var frame2  = $V([-15, 0, 0,   -5, -5, -5, 5, 5, 10,          -10, 0, -5, 5, 5, 10      ]);
+        var frame3  = $V([15, 0, 0,   -10, -10, -5, 5, 10, 10,      -5, -5, -5, 5, 5, 5   ]);
+        var frame4  = $V([15, 0, 0,   -10, -10, -5, 5, 10, 10,      -5, -5, -5, 5, 5, 5   ]);
+        var frame5  = $V([15, 0, 0,   -10, -10, -5, 5, 10, 10,      -5, -5, -5, 5, 5, 5   ]);
+        var frames  = [frame0, frame1, frame2, frame3, frame4, frame5];
+        this.maxFrames = frames.length;
+        var workingFrame = base;
+
+        for (var i = 0; i <= this.frame ; i++) {
+            var currentFrame = frames[i];
+            workingFrame = workingFrame.add(currentFrame);
+        }
+        workingFrame = workingFrame.map(function(e) { return that.degrees(e) });
+        this.updateFromVector(workingFrame);
+
+        if (this.direction == 1)
+            this.flipHorizontalDirection();
+
+        this.generateCoordinates();
+    };
+
+    this.updateFromVector = function(v) {
+        this.headAngle = v.e(1);
+        this.neckAngle = v.e(2);
+        this.torsoAngle = v.e(3);
+
+        this.fShoulderAngle = v.e(4);
+        this.fElbowAngle = v.e(5);
+        this.fHandAngle = v.e(6);
+        this.bShoulderAngle = v.e(7);
+        this.bElbowAngle = v.e(8);
+        this.bHandAngle = v.e(9);
+
+        this.fHipAngle = v.e(10);
+        this.fKneeAngle = v.e(11);
+        this.fFootAngle = v.e(12);
+        this.bHipAngle = v.e(13);
+        this.bKneeAngle = v.e(14);
+        this.bFootAngle = v.e(15);
+    }
 
     // Exploding
     this.explode = function() {
@@ -449,6 +557,10 @@ StickFigure = function(_x, _y, _figureWidth, _figureHeight, _exaggerated) {
         return Math.PI * (val / 12);
     };
 
+    this.degrees = function(val) {
+        return Math.PI * (val / 180);
+    };
+
     this.generateCoordinates = function() {
         this.hipX = Math.floor(this.originHipX + this.offsetX);
         this.hipY = Math.floor(this.originHipY + this.offsetY);
@@ -586,6 +698,18 @@ StickFigure = function(_x, _y, _figureWidth, _figureHeight, _exaggerated) {
         this.offsetY = ((percentage / 100) * this.figureHeight);
     };
 
+    this.hipDrivingFootHorizontalDistance = function() {
+        if (!this.hipX)
+            return 0;
+        return (this.lowestFoot() - this.hipX);
+    }
+
+    this.lowestFoot = function() {
+        if (! this.hipX)
+            return 0;
+        return this.fFootY > this.bFootY ? this.fFootX : this.bFootX;
+    }
+
 
     // Variables
 
@@ -638,7 +762,7 @@ StickFigure = function(_x, _y, _figureWidth, _figureHeight, _exaggerated) {
         , this.figureHeight = _figureHeight
         , this.exaggerated = _exaggerated
         , this.frame = 0
-        , this.maxFrames = 3
+        , this.maxFrames = 4
         , this.direction = 0;
     this.generateDimensions();
 
