@@ -40,13 +40,18 @@ var xshift = 20;
 var action = 'run';
 var direction = 0;
 var border = true;
+var ground = true;
 var bounce = true;
 var exaggerated = false;
+var stationary = false;
+var forward = true;
+var face = true;
 var canvasWidth = 1000;
 var x = 0, y = defaultY, width = 100, height = 100;
 var sf = null;
 var currentFrame = 0;
 var timerId = 0;
+var activeSegment = null;
 
 
 $(document).ready(function() {
@@ -58,41 +63,38 @@ $(document).ready(function() {
         var h = canvas.height;
         ctx.clearRect(0, 0, w, h);
 
-        // Do offsets
-//        if (direction == 0)
-//            sf.offsetX = (sf.offsetX > canvasWidth - 150 ? 0 : sf.offsetX + xshift)
-//        else
-//            sf.offsetX = (sf.offsetX < 0 ? canvasWidth - 150 : sf.offsetX - xshift)
-
         var prevLowestFoot  = sf.hipDrivingFootHorizontalDistance();
 
         sf.defaultAction();
         $('#display').html(currentFrame);
         sf.drawFigure(ctx);
-        sf.updateFrame();
+        sf.updateFrame(forward);
 
         var newLowestFoot = sf.hipDrivingFootHorizontalDistance();
-//        console.log(newLowestFoot, prevLowestFoot, (newLowestFoot - prevLowestFoot), sf.hipX)
-        //sf.offsetX = (sf.offsetX > canvasWidth - 150 ? 0 : sf.offsetX + (newLowestFoot - prevLowestFoot))
-        var offsetX = 0;
-//        if (sf.frame != 0)
-//            offsetX = Math.abs(newLowestFoot - prevLowestFoot)
-        if (direction == 0)
-            sf.offsetX += 3
-        else
-            sf.offsetX -= 3
-//        if (direction == 0)
-//            sf.offsetX = (sf.offsetX > canvasWidth - 150 ? 0 : sf.offsetX + offsetX)
-//        else
-//            sf.offsetX = (sf.offsetX < 0 ? canvasWidth - 150 : sf.offsetX - offsetX)
 
-        ctx.lineWidth = linewidth;
+
+		ctx.lineWidth = linewidth;
+		ctx.lineJoin = "round";
         ctx.lineCap = "round";
         ctx.strokeStyle = '#000';
         ctx.stroke();
 
-        if (border)
-            ctx.strokeRect(x, y, width, height);
+		if (face) {
+	        sf.drawFace(ctx);
+			ctx.lineWidth = 1;
+	        ctx.stroke();
+		}
+
+        if (border) {
+            ctx.strokeRect(sf.offsetX, y, width, height);
+		}
+        if (ground) {
+			ctx.moveTo(0, y + height);
+			ctx.lineTo(w, y + height);
+	        ctx.lineWidth = 1;
+	        ctx.strokeStyle = '#000';
+	        ctx.stroke();
+		}
 
         currentFrame = sf.frame;
     };
@@ -104,7 +106,10 @@ $(document).ready(function() {
         direction = $('input:checkbox[name=direction]:checked').val() == 'on' ? 1 : 0;
         exaggerated = $('input:checkbox[name=exaggerated]:checked').val() == 'on';
         border = $('input:checkbox[name=border]:checked').val();
+        ground = $('input:checkbox[name=ground]:checked').val();
         bounce = $('input:checkbox[name=bounce]:checked').val();
+		stationary = $('input:checkbox[name=stationary]:checked').val() == 'on';
+        face = $('input:checkbox[name=face]:checked').val() == 'on';
         //framerate = $('input:text[name=framerate]').val();
         framerate = parseInt($('#framerate').val());
         //linewidth = $('input:text[name=linewidth]').val();
@@ -145,12 +150,14 @@ $(document).ready(function() {
 
 
     $('#back').click(function() {
+		forward = false;
         if (sf == undefined)
             constructFigure();
         drawFigure();
     });
 
     $('#step').click(function() {
+		forward = true;
         if (sf == undefined)
             constructFigure();
         drawFigure();
@@ -158,7 +165,6 @@ $(document).ready(function() {
 
     function animloop() {
         if (running) {
-//            window.requestAnimationFrame(animloop);
             setTimeout(function() {
                 window.requestAnimationFrame(animloop);
                 // Drawing code goes here
@@ -175,6 +181,7 @@ $(document).ready(function() {
     };
 
     $('#play').click(function() {
+		forward = true;
             if (running) {
                 clearInterval(timerId);
                 $('#play').val('play');
@@ -188,10 +195,16 @@ $(document).ready(function() {
         }
     );
 
-    $('input').change(function() {
+    $('input[type="radio"]').change(function() {
+        action = $('input:radio[name=action]:checked').val();
+        sf.defaultAction = eval('sf. ' + action);
+    });
+
+    $('input[type="checkbox"]').change(function() {
         constructFigure();
         if (running) {
             clearInterval(timerId);
+            running = false;
             startRunning();
         }
         else {
@@ -199,16 +212,81 @@ $(document).ready(function() {
         }
     });
 
-
     $('#update').click(function() {
         jsonifyFigure();
         drawFigure();
     });
 
-    $('#gofigure-canvas').keydown(function(e) {
-        console.log(e.which)
-
+    $('#gofigure-canvas').mousedown(function(ev) {
+        var ox = ev.offsetX, oy = ev.offsetY;
+		
+        var canvas = $(canvasName)[0];
+        var ctx = canvas.getContext('2d');
+        var w = canvas.width;
+        var h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+		sf.drawFigure(ctx);
+        ctx.strokeStyle = '#000';
+        ctx.stroke();
+		activeSegment = sf.detectCollision(ox, oy, 3)
+		sf.drawSegment(ctx, activeSegment);
+        ctx.strokeStyle = '#f00';
+        ctx.stroke();
     });
+
+    $('#gofigure-canvas').mousemove(function(ev) {
+        var ox = ev.offsetX, oy = ev.offsetY;
+		if (activeSegment != null) {
+	        var canvas = $(canvasName)[0];
+	        var ctx = canvas.getContext('2d');
+	        var w = canvas.width;
+	        var h = canvas.height;
+	        ctx.clearRect(0, 0, w, h);
+			sf.recalibrateSegment(activeSegment, ox, oy);
+			sf.generateCoordinates();
+			sf.drawFigure(ctx);
+	        ctx.strokeStyle = '#000';
+	        ctx.stroke();
+			sf.drawSegment(ctx, activeSegment);
+	        ctx.strokeStyle = '#f00';
+	        ctx.stroke();
+	        $('#figure-points').val(js_beautify(JSON.stringify(sf)));
+	
+		}
+    });
+
+    $('#gofigure-canvas').mouseup(function(ev) {
+        var ox = ev.offsetX, oy = ev.offsetY;
+		if (activeSegment != null) {
+			activeSegment = null;
+		}
+    });
+
+
+    $('#snapshot').click(function() {
+		var str = sf.stringifyAngles();
+        $('#figure-live-points').val(str)
+    });
+
+    $('#frame').click(function() {
+		var str = sf.stringifyAngles();
+		var existingAngles = $('#figure-live-points').val();
+		existingAngles += '\n' + str;
+        $('#figure-live-points').val(existingAngles)
+    });
+
+    $('#playback').click(function() {
+		var framesOfPoints = [];
+        var lines = $('#figure-live-points').val().split('\n');
+		lines.forEach(function(line) {
+			var data = line.split(',').map(function(d) { return parseInt(d)});
+			framesOfPoints.push($V(data))
+		})
+		sf.frames = framesOfPoints;
+		sf.defaultAction = sf.genericAction;
+		startRunning();
+    });
+
 
     $(document).keydown(function(e) {
         switch(e.which) {

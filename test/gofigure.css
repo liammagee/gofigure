@@ -30,17 +30,20 @@ p {
 #content {
     background: #FFFFFF;
     border-radius: 10px;
-    border: 1px solid #ebebeb;
+    border: 3px solid #ebebeb;
     margin: 5px;
     padding: 10px;
 }
 
 #gofigure-canvas {
+    border-radius: 10px;
     border: solid 1px #ebebeb;
 }
 
-#figure-points {
+textarea {
     width: 960px;
     height: 250px;
     border: solid 1px #ebebeb;
+    border-radius: 10px;
+
 }

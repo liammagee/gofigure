@@ -11,7 +11,7 @@
     <script src="../libs/jquery-loader.js"></script>
     <script src="../libs/beautify.js"></script>
     <script src="../libs/sylvester.js"></script>
-    <script src="../src/figurestick.js"></script>
+    <script src="../src/go-figure.js"></script>
     <script src="gofigure_test.js"></script>
 </head>
 <body>
@@ -21,15 +21,14 @@
     <div id="contentwrap">
         <div id="content">
             <div>
-                <h1>GO FIGURE...</h1>
+                <h1>go figure...</h1>
             </div>
 
             <canvas width="960px" id="gofigure-canvas"></canvas>
 
             <div>
-                <input type="radio" name="action" value="run" /><span>run</span>
+                <input type="radio" name="action" value="run"  checked="checked"/><span>run</span>
                 <input type="radio" name="action" value="walk"/><span>walk</span>
-                <input type="radio" name="action" value="walk2" checked="checked"/><span>walk2</span>
                 <input type="radio" name="action" value="expire"/><span>expire</span>
                 <input type="radio" name="action" value="explode"/><span>explode</span>
                 <input type="radio" name="action" value="stand"/><span>stand</span>
@@ -44,8 +43,17 @@
                 <input type="checkbox" name="border"/><span>include border</span>
             </div>
             <div>
+                <input type="checkbox" name="ground"/><span>include ground</span>
+            </div>
+            <div>
                 <input type="checkbox" name="bounce"/><span>bounce during run</span>
             </div>
+			<div>
+				<input type="checkbox" name="stationary"/><span>stationary</span>
+			</div>
+			<div>
+				<input type="checkbox" name="face" checked="checked"/><span>face</span>
+			</div>
             <div>
                 <span>frame rate: </span><input type="number" step="5" id="framerate" name="framerate" value="10"/>
             </div>
@@ -60,7 +68,7 @@
             </div>
             <div>
                 <input type="button" value="play" id="play"/>
-                <!--<input type="button" value="back" id="step back"/>-->
+                <input type="button" value="back" id="back"/>
                 <input type="button" value="step" id="step"/>
                 <input type="button" value="update" id="update"/>
             </div>
@@ -68,6 +76,17 @@
                 figure:
                 <div>
                     <textarea id="figure-points"></textarea>
+                </div>
+            </div>
+            <div>
+                <input type="button" value="snapshot" id="snapshot"/>
+                <input type="button" value="frame" id="frame"/>
+                <input type="button" value="playback" id="playback"/>
+            </div>
+            <div id="live-points">
+                live-points:
+                <div>
+                    <textarea id="figure-live-points"></textarea>
                 </div>
             </div>
         </div>
