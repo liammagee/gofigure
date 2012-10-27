@@ -52,6 +52,8 @@ var sf = null;
 var currentFrame = 0;
 var timerId = 0;
 var activeSegment = null;
+var activeFigure = false;
+var currentX = 0, currentY = 0;
 
 
 $(document).ready(function() {
@@ -83,6 +85,7 @@ $(document).ready(function() {
 	        sf.drawFace(ctx);
 			ctx.lineWidth = 1;
 	        ctx.stroke();
+			ctx.lineWidth = linewidth;
 		}
 
         if (border) {
@@ -224,23 +227,40 @@ $(document).ready(function() {
         var ctx = canvas.getContext('2d');
         var w = canvas.width;
         var h = canvas.height;
-        ctx.clearRect(0, 0, w, h);
-		sf.drawFigure(ctx);
-        ctx.strokeStyle = '#000';
-        ctx.stroke();
-		activeSegment = sf.detectCollision(ox, oy, 3)
-		sf.drawSegment(ctx, activeSegment);
-        ctx.strokeStyle = '#f00';
-        ctx.stroke();
+		if (activeFigure) {
+			activeFigure = false;
+		}
+		else {
+	        ctx.clearRect(0, 0, w, h);
+			sf.drawFigure(ctx);
+	        ctx.strokeStyle = '#000';
+	        ctx.stroke();
+			activeSegment = sf.detectCollision(ox, oy, 3)
+			sf.drawSegment(ctx, activeSegment);
+	        ctx.strokeStyle = '#f00';
+	        ctx.stroke();
+		}
     });
 
     $('#gofigure-canvas').mousemove(function(ev) {
         var ox = ev.offsetX, oy = ev.offsetY;
-		if (activeSegment != null) {
-	        var canvas = $(canvasName)[0];
-	        var ctx = canvas.getContext('2d');
-	        var w = canvas.width;
-	        var h = canvas.height;
+        var canvas = $(canvasName)[0];
+        var ctx = canvas.getContext('2d');
+        var w = canvas.width;
+        var h = canvas.height;
+		if (activeFigure) {
+			var dx = ox - currentX, dy = oy - currentY;
+			currentX = ox, currentY = oy;
+			sf.x += dx;
+			sf.y += dy;
+			//sf.shiftY(dy);
+	        ctx.clearRect(0, 0, w, h);
+			sf.generateCoordinates();
+			sf.drawFigure(ctx);
+	        ctx.strokeStyle = '#f00';
+	        ctx.stroke();
+		}
+		else if (activeSegment != null) {
 	        ctx.clearRect(0, 0, w, h);
 			sf.recalibrateSegment(activeSegment, ox, oy);
 			sf.generateCoordinates();
@@ -251,7 +271,6 @@ $(document).ready(function() {
 	        ctx.strokeStyle = '#f00';
 	        ctx.stroke();
 	        $('#figure-points').val(js_beautify(JSON.stringify(sf)));
-	
 		}
     });
 
@@ -260,16 +279,38 @@ $(document).ready(function() {
 		if (activeSegment != null) {
 			activeSegment = null;
 		}
+		if (activeFigure) {
+			//activeFigure = false;
+		}
+    });
+
+    $('#gofigure-canvas').dblclick(function(ev) {
+        var ox = ev.offsetX, oy = ev.offsetY;
+		if (activeSegment != null) {
+			activeSegment = null;
+		}
+		if (sf.detectCollision(ox, oy, 3)) {
+			currentX = ox, currentY = oy;
+			activeFigure = true;
+	        var canvas = $(canvasName)[0];
+	        var ctx = canvas.getContext('2d');
+	        var w = canvas.width;
+	        var h = canvas.height;
+	        ctx.clearRect(0, 0, w, h);
+			sf.drawFigure(ctx);
+	        ctx.strokeStyle = '#f00';
+	        ctx.stroke();
+		}
     });
 
 
     $('#snapshot').click(function() {
-		var str = sf.stringifyAngles();
+		var str = sf.x + ',' + sf.y + ',' + sf.stringifyAngles();
         $('#figure-live-points').val(str)
     });
 
     $('#frame').click(function() {
-		var str = sf.stringifyAngles();
+		var str = sf.x + ',' + sf.y + ',' + sf.stringifyAngles();
 		var existingAngles = $('#figure-live-points').val();
 		existingAngles += '\n' + str;
         $('#figure-live-points').val(existingAngles)
@@ -279,16 +320,20 @@ $(document).ready(function() {
 		var framesOfPoints = [];
         var lines = $('#figure-live-points').val().split('\n');
 		lines.forEach(function(line) {
-			var data = line.split(',').map(function(d) { return parseInt(d)});
-			framesOfPoints.push($V(data))
+			var data = line.split(',')
+			var x = parseInt(data.splice(0, 1)[0])
+			var y = parseInt(data.splice(0, 1)[0])
+			var angles = data.map(function(d) { return parseInt(d)});
+			framesOfPoints.push(new Frame(x, y, $V(angles)))
 		})
-		sf.frames = framesOfPoints;
+		sf.frameSet = new FrameSet(framesOfPoints, false);
+		sf.frame = 0;
 		sf.defaultAction = sf.genericAction;
 		startRunning();
     });
 
 
-    $(document).keydown(function(e) {
+    $('#gofigure-canvas').keydown(function(e) {
         switch(e.which) {
             case 37:
                 sf.direction = direction = 1;
