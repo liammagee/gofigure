@@ -114,6 +114,12 @@ $(document).ready(function () {
         sf.drawFigure(ctx);
         ctx.strokeStyle = color;
         ctx.stroke();
+        if (face) {
+            sf.drawFace(ctx);
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            ctx.lineWidth = linewidth;
+        }
     }
 
     var constructFigure = function () {
@@ -228,7 +234,7 @@ $(document).ready(function () {
             case "run":
                 sf.defaultAction = StickFigure.Running;
                 break;
-            case "runWithBounce":
+            case "bounce":
                 sf.defaultAction = StickFigure.RunAndBounce;
                 break;
             case "walk":
@@ -417,7 +423,8 @@ $(document).ready(function () {
     $('#action').click(function () {
         sf.BaseFrame();
         var existingAngles = sf.x + ',' + sf.y + ','+ sf.stringifyAngles();
-        var frameSet = sf.defaultAction();
+        var frameSet = sf.defaultAction(),
+            cumulative = frameSet.cumulative;
         var currentFrame = [];
         for (var i = 0; i < frameSet.frames.length; i++) {
             sf.doAction();
@@ -426,6 +433,19 @@ $(document).ready(function () {
             existingAngles += '\n' + sf.x + ',' + sf.y + ','+ str;
         }
         $('#figure-live-points').val(existingAngles)
+    });
+
+    $('#speak').click(function () {
+        var canvas = $(canvasName)[0];
+        var ctx = canvas.getContext('2d');
+        drawDefaultFigure();
+        var speakValue = $('#speakValue').val();
+        if (speakValue == '')
+            speakValue = action;
+        console.log(speakValue)
+        sf.drawSpeechBubble(ctx, speakValue);
+        ctx.strokeStyle = '#000';
+        ctx.stroke();
     });
 
 

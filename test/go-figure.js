@@ -90,7 +90,7 @@ StickFigure = function(_x, _y, _width, _height, _exaggerated) {
 
     };
 
-	this.drawFace = function(context) {
+    this.drawFace = function(context) {
             // Eyes
             var eyePos = - 0.15,
                 eyeRadius = 0.5,
@@ -117,7 +117,52 @@ StickFigure = function(_x, _y, _width, _height, _exaggerated) {
             context.moveTo(mouthEndX, mouthEndY);
             context.lineTo(mouthStartX, mouthStartY);
             context.closePath();
-	};
+    };
+
+    this.drawSpeechBubble = function(context, message) {
+            message = message || 'hello';
+            var metrics = context.measureText(message)
+                , textWidth = metrics.width;
+
+            // Mouth
+            var mouthPos = - 1.85,
+                mouthLen = 0.65,
+                mouthEndX = this.headX + Math.cos(Math.PI * mouthPos) * this.headRadius,
+                mouthEndY = this.headY + Math.sin(Math.PI * mouthPos) * this.headRadius,
+                mouthStartX = mouthEndX - (this.headRadius * mouthLen),
+                mouthStartY = mouthEndY;
+            var bubbleCenterX = (this.headX / 2) + (this.headRadius * 3) + (textWidth / 2)
+                , bubbleCenterY = this.headY - (this.headRadius * 2)
+                , bubbleRadius = 10 * (Math.pow(textWidth / 10, 0.75)); 
+
+            if (direction == 1) {
+                mouthEndX = this.headX - mouthEndX;
+            }
+            // save state
+            context.save();
+
+            // scale context horizontally
+            context.scale(2, 1);            
+
+
+            var btnAngle = Math.PI * 1.75
+                , btnX = bubbleCenterX - Math.cos(btnAngle) * bubbleRadius
+                , btnY = bubbleCenterY - Math.sin(btnAngle) * bubbleRadius;
+            context.beginPath();
+            context.arc(bubbleCenterX, bubbleCenterY, bubbleRadius, Math.PI, Math.PI + btnAngle, false);
+            context.moveTo(bubbleCenterX - bubbleRadius, bubbleCenterY);
+            context.lineTo(mouthEndX / 2, mouthEndY);
+            context.moveTo(btnX, btnY);
+            context.lineTo(mouthEndX / 2, mouthEndY);
+            context.closePath();
+
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+            context.fillText(message, bubbleCenterX, bubbleCenterY);
+
+            // save state
+            context.restore();
+    };
 
 	this.drawSegment = function(context, segment) {
         context.beginPath();
@@ -823,16 +868,15 @@ StickFigure.Stand = function() {
     return new FrameSet(frames, false);
 }
 
-StickFigure.Speak = function() {
-    var frame0  = $V([0, 0, 0,   0, 0, -90, 0, 0, 90,    0, 0, -90, 0, 0, 90]);
-    var frames  = [frame0, frame0].map(function(frame) { return new Frame(0, 0, frame)});
-    return new FrameSet(frames, false);
-}
 
 
 
 // Exploding
 StickFigure.Explode = function() {
+    var frame0  = $V([0, 0, 0,   0, 0, -90, 0, 0, 90,    0, 0, -90, 0, 0, 90]);
+    var frames  = [frame0, frame0].map(function(frame) { return new Frame(0, 0, frame)});
+    return new FrameSet(frames, false);
+    /*
     switch (this.frame) {
         case 0:
             this.fShoulderAngle = this.defaultAngle;
@@ -900,10 +944,15 @@ StickFigure.Explode = function() {
     if (this.direction == 1)
         this.flipHorizontalDirection();
     this.generateCoordinates();
+    */
 };
 
 // Expiring
 StickFigure.Expire = function() {
+    var frame0  = $V([0, 0, 0,   0, 0, -90, 0, 0, 90,    0, 0, -90, 0, 0, 90]);
+    var frames  = [frame0, frame0].map(function(frame) { return new Frame(0, 0, frame)});
+    return new FrameSet(frames, false);
+    /*
     switch (this.frame) {
         case 0:
             this.shiftY(0);
@@ -987,4 +1036,5 @@ StickFigure.Expire = function() {
     if (this.direction == 1)
         this.flipHorizontalDirection();
     this.generateCoordinates();
+    */
 };
