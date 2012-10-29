@@ -11,7 +11,8 @@
     <script src="../libs/jquery-loader.js"></script>
     <script src="../libs/beautify.js"></script>
     <script src="../libs/sylvester.js"></script>
-    <script src="../src/go-figure.js"></script>
+    <!-- this is to simplify iPad editing - Back out at a later date -->
+    <script src="../test/go-figure.js"></script>
     <script src="gofigure_test.js"></script>
 </head>
 <body>
@@ -28,10 +29,12 @@
 
             <div>
                 <input type="radio" name="action" value="run"  checked="checked"/><span>run</span>
+                <input type="radio" name="action" value="runWithBounce" /><span>run and bounce</span>
                 <input type="radio" name="action" value="walk"/><span>walk</span>
                 <input type="radio" name="action" value="expire"/><span>expire</span>
                 <input type="radio" name="action" value="explode"/><span>explode</span>
                 <input type="radio" name="action" value="stand"/><span>stand</span>
+                <input type="radio" name="action" value="speak"/><span>speak</span>
             </div>
             <div>
                 <input type="checkbox" name="direction"/><span>reverse direction</span>
@@ -67,6 +70,20 @@
                 frame: <span id="display"></span>
             </div>
             <div>
+                <input type="button" value="+" id="plus"/>
+                <input type="button" value="-" id="minus"/>
+                <input type="button" value="left" id="left"/>
+                <input type="button" value="right" id="right"/>
+                <input type="button" value="up" id="up"/>
+                <input type="button" value="down" id="down"/>
+            </div>
+            <div>
+                <input type="button" value="prev" id="prev"/>
+                <input type="button" value="next" id="next"/>
+                <input type="button" value="highlight" id="highlight"/>
+                <input type="button" value="none" id="none"/>
+            </div>
+            <div>
                 <input type="button" value="play" id="play"/>
                 <input type="button" value="back" id="back"/>
                 <input type="button" value="step" id="step"/>
@@ -76,6 +93,7 @@
                 <input type="button" value="snapshot" id="snapshot"/>
                 <input type="button" value="frame" id="frame"/>
                 <input type="button" value="playback" id="playback"/>
+                <input type="button" value="action" id="action"/>
             </div>
             <div id="live-points">
                 live-points:

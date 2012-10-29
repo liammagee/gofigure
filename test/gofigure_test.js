@@ -4,27 +4,29 @@
 // requestAnimationFrame polyfill by Erik Möller
 // fixes from Paul Irish and Tino Zijdel
 
-(function() {
+(function () {
     var lastTime = 0;
     var vendors = ['ms', 'moz', 'webkit', 'o'];
-    for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
-        window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
-        window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame']
-            || window[vendors[x]+'CancelRequestAnimationFrame'];
+    for (var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+        window.requestAnimationFrame = window[vendors[x] + 'RequestAnimationFrame'];
+        window.cancelAnimationFrame = window[vendors[x] + 'CancelAnimationFrame']
+            || window[vendors[x] + 'CancelRequestAnimationFrame'];
     }
 
     if (!window.requestAnimationFrame)
-        window.requestAnimationFrame = function(callback, element) {
+        window.requestAnimationFrame = function (callback, element) {
             var currTime = new Date().getTime();
             var timeToCall = Math.max(0, 16 - (currTime - lastTime));
-            var id = window.setTimeout(function() { callback(currTime + timeToCall); },
+            var id = window.setTimeout(function () {
+                    callback(currTime + timeToCall);
+                },
                 timeToCall);
             lastTime = currTime + timeToCall;
             return id;
         };
 
     if (!window.cancelAnimationFrame)
-        window.cancelAnimationFrame = function(id) {
+        window.cancelAnimationFrame = function (id) {
             clearTimeout(id);
         };
 }());
@@ -56,18 +58,18 @@ var activeFigure = false;
 var currentX = 0, currentY = 0;
 
 
-$(document).ready(function() {
+$(document).ready(function () {
 
-    var drawFigure = function() {
+    var doFigureFrame = function () {
         var canvas = $(canvasName)[0];
         var ctx = canvas.getContext('2d');
         var w = canvas.width;
         var h = canvas.height;
         ctx.clearRect(0, 0, w, h);
 
-        var prevLowestFoot  = sf.hipDrivingFootHorizontalDistance();
+        var prevLowestFoot = sf.hipDrivingFootHorizontalDistance();
 
-        sf.defaultAction();
+        sf.doAction();
         $('#display').html(currentFrame);
         sf.drawFigure(ctx);
         sf.updateFrame(forward);
@@ -75,34 +77,46 @@ $(document).ready(function() {
         var newLowestFoot = sf.hipDrivingFootHorizontalDistance();
 
 
-		ctx.lineWidth = linewidth;
-		ctx.lineJoin = "round";
+        ctx.lineWidth = linewidth;
+        ctx.lineJoin = "round";
         ctx.lineCap = "round";
         ctx.strokeStyle = '#000';
         ctx.stroke();
 
-		if (face) {
-	        sf.drawFace(ctx);
-			ctx.lineWidth = 1;
-	        ctx.stroke();
-			ctx.lineWidth = linewidth;
-		}
+        if (face) {
+            sf.drawFace(ctx);
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            ctx.lineWidth = linewidth;
+        }
 
         if (border) {
             ctx.strokeRect(sf.offsetX, y, width, height);
-		}
+        }
         if (ground) {
-			ctx.moveTo(0, y + height);
-			ctx.lineTo(w, y + height);
-	        ctx.lineWidth = 1;
-	        ctx.strokeStyle = '#000';
-	        ctx.stroke();
-		}
+            ctx.moveTo(0, y + height);
+            ctx.lineTo(w, y + height);
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = '#000';
+            ctx.stroke();
+        }
 
         currentFrame = sf.frame;
     };
 
-    var constructFigure = function() {
+    var drawDefaultFigure = function (color) {
+        color = color || "#000";
+        var canvas = $(canvasName)[0];
+        var ctx = canvas.getContext('2d');
+        var w = canvas.width;
+        var h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+        sf.drawFigure(ctx);
+        ctx.strokeStyle = color;
+        ctx.stroke();
+    }
+
+    var constructFigure = function () {
         var y = defaultY;
         canvasWidth = $('#gofigure-canvas').width();
         action = $('input:radio[name=action]:checked').val();
@@ -111,7 +125,7 @@ $(document).ready(function() {
         border = $('input:checkbox[name=border]:checked').val();
         ground = $('input:checkbox[name=ground]:checked').val();
         bounce = $('input:checkbox[name=bounce]:checked').val();
-		stationary = $('input:checkbox[name=stationary]:checked').val() == 'on';
+        stationary = $('input:checkbox[name=stationary]:checked').val() == 'on';
         face = $('input:checkbox[name=face]:checked').val() == 'on';
         //framerate = $('input:text[name=framerate]').val();
         framerate = parseInt($('#framerate').val());
@@ -136,14 +150,14 @@ $(document).ready(function() {
         }
 
         sf = new StickFigure(x, y, width, height, exaggerated);
-        sf.defaultAction = eval('sf. ' + action);
+        sf.defaultAction = StickFigure.Running;
         sf.frame = currentFrame;
         sf.direction = direction;
 
         $('#figure-points').val(js_beautify(JSON.stringify(sf)));
     };
 
-    var jsonifyFigure = function() {
+    var jsonifyFigure = function () {
         var jsonObj = JSON.parse($('#figure-points').val());
         for (var key in jsonObj) {
             //copy all the fields
@@ -151,59 +165,91 @@ $(document).ready(function() {
         }
     };
 
+    var makeFigureActive = function () {
+        activeFigure = true;
+        drawDefaultFigure('#f00');
+    };
 
-    $('#back').click(function() {
-		forward = false;
+
+    $('#back').click(function () {
+        forward = false;
         if (sf == undefined)
             constructFigure();
-        drawFigure();
+        doFigureFrame();
     });
 
-    $('#step').click(function() {
-		forward = true;
+    $('#step').click(function () {
+        forward = true;
         if (sf == undefined)
             constructFigure();
-        drawFigure();
+        doFigureFrame();
     });
 
     function animloop() {
         if (running) {
-            setTimeout(function() {
+            setTimeout(function () {
                 window.requestAnimationFrame(animloop);
                 // Drawing code goes here
             }, 1000 / parseInt(framerate));
-            drawFigure();
+            doFigureFrame();
         }
-    };
+    }
 
-    var startRunning = function() {
+    ;
+
+    var startRunning = function () {
         running = true;
 //        timerId = setInterval(drawFigure, 1);
 //                timerId = setInterval(drawFigure, parseInt(framerate));
         animloop();
     };
 
-    $('#play').click(function() {
-		forward = true;
-            if (running) {
-                clearInterval(timerId);
-                $('#play').val('play');
-                running = false;
-            }
-            else {
-                constructFigure();
-                $('#play').val('pause');
-                startRunning();
-            }
+    $('#play').click(function () {
+        forward = true;
+        if (running) {
+            clearInterval(timerId);
+            $('#play').val('play');
+            running = false;
         }
-    );
-
-    $('input[type="radio"]').change(function() {
-        action = $('input:radio[name=action]:checked').val();
-        sf.defaultAction = eval('sf. ' + action);
+        else {
+            //constructFigure();
+            $('#play').val('pause');
+            startRunning();
+        }
     });
 
-    $('input[type="checkbox"]').change(function() {
+    var resolveAction = function(action) {
+    }
+
+    $('input[type="radio"]').change(function () {
+        action = $('input:radio[name=action]:checked').val();
+        var actionFunc = StickFigure.Running;
+        switch(action) {
+            case "run":
+                sf.defaultAction = StickFigure.Running;
+                break;
+            case "runWithBounce":
+                sf.defaultAction = StickFigure.RunAndBounce;
+                break;
+            case "walk":
+                sf.defaultAction = StickFigure.Walking;
+                break;
+            case "expire":
+                sf.defaultAction = StickFigure.Expire;
+                break;
+            case "explode":
+                sf.defaultAction = StickFigure.Explode;
+                break;
+            case "stand":
+                sf.defaultAction = StickFigure.Stand;
+                break;
+            case "speak":
+                sf.defaultAction = StickFigure.Speak;
+                break;
+        }
+    });
+
+    $('input[type="checkbox"]').change(function () {
         constructFigure();
         if (running) {
             clearInterval(timerId);
@@ -211,142 +257,192 @@ $(document).ready(function() {
             startRunning();
         }
         else {
-            drawFigure();
+            doFigureFrame();
         }
     });
 
-    $('#update').click(function() {
+
+    $('#plus').click(function () {
+        if (sf.width < 200) {
+            sf.width *= 1.1;
+            sf.height *= 1.1;
+            sf.generateDimensions();
+            sf.generateCoordinates();
+            drawDefaultFigure();
+        }
+    });
+
+    $('#minus').click(function () {
+        if (sf.width > 10) {
+            sf.width /= 1.1;
+            sf.height /= 1.1;
+            sf.generateDimensions();
+            sf.generateCoordinates();
+            drawDefaultFigure();
+        }
+    });
+
+    $('#highlight').click(function () {
+        currentX = sf.x + (sf.width / 2), currentY = sf.y + (sf.height / 2);
+        makeFigureActive();
+    });
+
+    $('#update').click(function () {
         jsonifyFigure();
-        drawFigure();
+        doFigureFrame();
     });
 
-    $('#gofigure-canvas').mousedown(function(ev) {
+    $('#gofigure-canvas').mousedown(function (ev) {
         var ox = ev.offsetX, oy = ev.offsetY;
-		
+
         var canvas = $(canvasName)[0];
         var ctx = canvas.getContext('2d');
         var w = canvas.width;
         var h = canvas.height;
-		if (activeFigure) {
-			activeFigure = false;
-		}
-		else {
-	        ctx.clearRect(0, 0, w, h);
-			sf.drawFigure(ctx);
-	        ctx.strokeStyle = '#000';
-	        ctx.stroke();
-			activeSegment = sf.detectCollision(ox, oy, 3)
-			sf.drawSegment(ctx, activeSegment);
-	        ctx.strokeStyle = '#f00';
-	        ctx.stroke();
-		}
+
+        var segment = sf.detectCollision(ox, oy, 1);
+        if (activeFigure) {
+            activeFigure = false;
+            drawDefaultFigure();
+        }
+        else if (segment != null) {
+            drawDefaultFigure();
+            if (activeSegment != segment) {
+                activeSegment = segment;
+                sf.drawSegment(ctx, activeSegment);
+                ctx.strokeStyle = '#f00';
+                ctx.stroke();
+            }
+            else {
+                activeSegment = null;
+            }
+        }
+        else if (activeSegment != null) {
+            ctx.clearRect(0, 0, w, h);
+            sf.recalibrateSegment(activeSegment, ox, oy);
+            sf.generateCoordinates();
+            drawDefaultFigure();
+            sf.drawSegment(ctx, activeSegment);
+            ctx.strokeStyle = '#f00';
+            ctx.stroke();
+            activeFigure = false;
+        }
     });
 
-    $('#gofigure-canvas').mousemove(function(ev) {
+    $('#gofigure-canvas').mousemove(function (ev) {
         var ox = ev.offsetX, oy = ev.offsetY;
         var canvas = $(canvasName)[0];
         var ctx = canvas.getContext('2d');
         var w = canvas.width;
         var h = canvas.height;
-		if (activeFigure) {
-			var dx = ox - currentX, dy = oy - currentY;
-			currentX = ox, currentY = oy;
-			sf.x += dx;
-			sf.y += dy;
-			//sf.shiftY(dy);
-	        ctx.clearRect(0, 0, w, h);
-			sf.generateCoordinates();
-			sf.drawFigure(ctx);
-	        ctx.strokeStyle = '#f00';
-	        ctx.stroke();
-		}
-		else if (activeSegment != null) {
-	        ctx.clearRect(0, 0, w, h);
-			sf.recalibrateSegment(activeSegment, ox, oy);
-			sf.generateCoordinates();
-			sf.drawFigure(ctx);
-	        ctx.strokeStyle = '#000';
-	        ctx.stroke();
-			sf.drawSegment(ctx, activeSegment);
-	        ctx.strokeStyle = '#f00';
-	        ctx.stroke();
-	        $('#figure-points').val(js_beautify(JSON.stringify(sf)));
-		}
+        if (activeFigure) {
+            var dx = ox - currentX, dy = oy - currentY;
+            currentX = ox, currentY = oy;
+            sf.x += dx;
+            sf.y += dy;
+            //sf.shiftY(dy);
+            ctx.clearRect(0, 0, w, h);
+            sf.generateCoordinates();
+            sf.drawFigure(ctx);
+            ctx.strokeStyle = '#f00';
+            ctx.stroke();
+        }
+        else if (activeSegment != null && ev.which > 0) {
+            ctx.clearRect(0, 0, w, h);
+            sf.recalibrateSegment(activeSegment, ox, oy);
+            sf.generateCoordinates();
+            sf.drawFigure(ctx);
+            ctx.strokeStyle = '#000';
+            ctx.stroke();
+            sf.drawSegment(ctx, activeSegment);
+            ctx.strokeStyle = '#f00';
+            ctx.stroke();
+            $('#figure-points').val(js_beautify(JSON.stringify(sf)));
+        }
     });
 
-    $('#gofigure-canvas').mouseup(function(ev) {
+    $('#gofigure-canvas').mouseup(function (ev) {
         var ox = ev.offsetX, oy = ev.offsetY;
-		if (activeSegment != null) {
-			activeSegment = null;
-		}
-		if (activeFigure) {
-			//activeFigure = false;
-		}
+        if (activeSegment != null) {
+            //activeSegment = null;
+        }
+        if (activeFigure) {
+            activeFigure = false;
+            activeSegment = null;
+        }
     });
 
-    $('#gofigure-canvas').dblclick(function(ev) {
+    $('#gofigure-canvas').dblclick(function (ev) {
         var ox = ev.offsetX, oy = ev.offsetY;
-		if (activeSegment != null) {
-			activeSegment = null;
-		}
-		if (sf.detectCollision(ox, oy, 3)) {
-			currentX = ox, currentY = oy;
-			activeFigure = true;
-	        var canvas = $(canvasName)[0];
-	        var ctx = canvas.getContext('2d');
-	        var w = canvas.width;
-	        var h = canvas.height;
-	        ctx.clearRect(0, 0, w, h);
-			sf.drawFigure(ctx);
-	        ctx.strokeStyle = '#f00';
-	        ctx.stroke();
-		}
+        if (activeSegment != null) {
+            activeSegment = null;
+        }
+        if (sf.detectCollision(ox, oy, 3)) {
+            currentX = ox, currentY = oy;
+            makeFigureActive();
+        }
     });
 
 
-    $('#snapshot').click(function() {
-		var str = sf.x + ',' + sf.y + ',' + sf.stringifyAngles();
+    $('#snapshot').click(function () {
+        var str = sf.x + ',' + sf.y + ',' + sf.stringifyAngles();
         $('#figure-live-points').val(str)
     });
 
-    $('#frame').click(function() {
-		var str = sf.x + ',' + sf.y + ',' + sf.stringifyAngles();
-		var existingAngles = $('#figure-live-points').val();
-		existingAngles += '\n' + str;
+    $('#frame').click(function () {
+        var str = sf.x + ',' + sf.y + ',' + sf.stringifyAngles();
+        var existingAngles = $('#figure-live-points').val();
+        existingAngles += '\n' + str;
         $('#figure-live-points').val(existingAngles)
     });
 
-    $('#playback').click(function() {
-		var framesOfPoints = [];
+    $('#playback').click(function () {
+        var framesOfPoints = [];
         var lines = $('#figure-live-points').val().split('\n');
-		lines.forEach(function(line) {
-			var data = line.split(',')
-			var x = parseInt(data.splice(0, 1)[0])
-			var y = parseInt(data.splice(0, 1)[0])
-			var angles = data.map(function(d) { return parseInt(d)});
-			framesOfPoints.push(new Frame(x, y, $V(angles)))
-		})
-		sf.frameSet = new FrameSet(framesOfPoints, false);
-		sf.frame = 0;
-		sf.defaultAction = sf.genericAction;
-		startRunning();
+        lines.forEach(function (line) {
+            var data = line.split(',')
+            var x = parseInt(data.splice(0, 1)[0])
+            var y = parseInt(data.splice(0, 1)[0])
+            var angles = data.map(function (d) {
+                return parseInt(d)
+            });
+            framesOfPoints.push(new Frame(x, y, $V(angles)))
+        })
+        sf.frameSet = new FrameSet(framesOfPoints, false);
+        sf.frame = 0;
+        sf.defaultAction = undefined;// StickFigure.Running;
+        startRunning();
+    });
+
+    $('#action').click(function () {
+        sf.BaseFrame();
+        var existingAngles = sf.x + ',' + sf.y + ','+ sf.stringifyAngles();
+        var frameSet = sf.defaultAction();
+        var currentFrame = [];
+        for (var i = 0; i < frameSet.frames.length; i++) {
+            sf.doAction();
+            sf.updateFrame();
+            var str = sf.stringifyAngles();
+            existingAngles += '\n' + sf.x + ',' + sf.y + ','+ str;
+        }
+        $('#figure-live-points').val(existingAngles)
     });
 
 
-    $('#gofigure-canvas').keydown(function(e) {
-        switch(e.which) {
+    $('#gofigure-canvas').keydown(function (e) {
+        switch (e.which) {
             case 37:
                 sf.direction = direction = 1;
-                drawFigure();
+                doFigureFrame();
                 break;
             case 39:
                 sf.direction = direction = 0;
-                drawFigure();
+                doFigureFrame();
                 break;
         }
     });
 
     constructFigure();
-    drawFigure();
+    doFigureFrame();
 
 })
