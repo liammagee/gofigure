@@ -34,6 +34,15 @@ StickFigure = function(_x, _y, _width, _height, _exaggerated) {
 
 
     this.drawFigure = function(context) {
+        if (this.hipX > context.canvas.width) {
+            this.x = 0;
+            this.generateCoordinates();
+        }
+        else if (this.hipX < 0) {
+            this.x = context.canvas.width - this.originHipX;
+            this.generateCoordinates();
+        }
+
         context.beginPath();
 
         // Torso
@@ -367,14 +376,16 @@ StickFigure = function(_x, _y, _width, _height, _exaggerated) {
         workingAngles = workingAngles.map(function(e) { return that.radians(e) });
         this.updateFromVector(workingAngles);
 
-		if (cumulative) {
-			this.shiftX(currentFrame.x);
-			this.shiftY(currentFrame.y);
-		}
-		else {
-			this.x = currentFrame.x;
-			this.y = currentFrame.y;
-		}
+        if (! stationary) {
+            if (cumulative) {
+                this.shiftX(currentFrame.x);
+                this.shiftY(currentFrame.y);
+            }
+            else {
+                this.x = currentFrame.x;
+                this.y = currentFrame.y;
+            }
+        }
 
         if (this.direction == 1)
             this.flipHorizontalDirection();
@@ -538,9 +549,9 @@ StickFigure = function(_x, _y, _width, _height, _exaggerated) {
         this.handLength = this.proportionOfBody(2 / 24);
 
         // 8/24
-        this.hipToKneeLength = this.proportionOfBody(8 / 24);
+        this.hipToKneeLength = this.proportionOfBody(7 / 24);
         // 8/24
-        this.kneeToFootLength = this.proportionOfBody(8 / 24);
+        this.kneeToFootLength = this.proportionOfBody(7 / 24);
         // 2/24
         this.footLength = this.proportionOfBody(2 / 24);
     };
@@ -572,9 +583,9 @@ StickFigure = function(_x, _y, _width, _height, _exaggerated) {
         this.handLength = this.proportionOfBody(2 / 24);
 
         // 6/24 - foreshortened
-        this.hipToKneeLength = this.proportionOfBody(7 / 24);
+        this.hipToKneeLength = this.proportionOfBody(6 / 24);
         // 6/24
-        this.kneeToFootLength = this.proportionOfBody(7 / 24);
+        this.kneeToFootLength = this.proportionOfBody(6 / 24);
         // 2/24
         this.footLength = this.proportionOfBody(2 / 24);
     };
@@ -816,9 +827,11 @@ StickFigure = function(_x, _y, _width, _height, _exaggerated) {
         , this.frame = 0
         , this.maxFrames = 4
         , this.frameSet = undefined
-        , this.direction = 0;
-    this.generateDimensions();
+        , this.direction = 0
+        , this.stationary = false;
 
+
+    this.generateDimensions();
 };
 
 

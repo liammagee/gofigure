@@ -34,11 +34,12 @@
 var frame = 0
     , maxFrames = 3;
 var canvasName = '#gofigure-canvas';
-var defaultY = 25;
+var defaultY = 40;
 var running = false;
 var framerate = 10;
 var linewidth = 3;
 var xshift = 20;
+var action = 'run';
 var action = 'run';
 var direction = 0;
 var border = true;
@@ -48,9 +49,10 @@ var exaggerated = false;
 var stationary = false;
 var forward = true;
 var face = true;
+var other = true;
 var canvasWidth = 1000;
 var x = 0, y = defaultY, width = 100, height = 100;
-var sf = null;
+var sf = null, sf2 = null;
 var currentFrame = 0;
 var timerId = 0;
 var activeSegment = null;
@@ -69,25 +71,38 @@ $(document).ready(function () {
 
         var prevLowestFoot = sf.hipDrivingFootHorizontalDistance();
 
-        sf.doAction();
         $('#display').html(currentFrame);
+
+        sf.doAction();
         sf.drawFigure(ctx);
         sf.updateFrame(forward);
 
         var newLowestFoot = sf.hipDrivingFootHorizontalDistance();
-
-
         ctx.lineWidth = linewidth;
         ctx.lineJoin = "round";
         ctx.lineCap = "round";
         ctx.strokeStyle = '#000';
         ctx.stroke();
 
+        if (other) {
+            sf2.doAction();
+            sf2.drawFigure(ctx);
+            sf2.updateFrame(forward);
+            ctx.stroke();
+        }
+
         if (face) {
             sf.drawFace(ctx);
             ctx.lineWidth = 1;
             ctx.stroke();
             ctx.lineWidth = linewidth;
+
+            if (other) {
+                sf2.drawFace(ctx);
+                ctx.lineWidth = 1;
+                ctx.stroke();
+                ctx.lineWidth = linewidth;
+            }
         }
 
         if (border) {
@@ -99,6 +114,7 @@ $(document).ready(function () {
             ctx.lineWidth = 1;
             ctx.strokeStyle = '#000';
             ctx.stroke();
+            ctx.lineWidth = linewidth;
         }
 
         currentFrame = sf.frame;
@@ -114,10 +130,22 @@ $(document).ready(function () {
         sf.drawFigure(ctx);
         ctx.strokeStyle = color;
         ctx.stroke();
+
+        if (other) {
+            sf2.drawFigure(ctx);
+            ctx.strokeStyle = color;
+            ctx.stroke();
+        }
+
         if (face) {
             sf.drawFace(ctx);
             ctx.lineWidth = 1;
             ctx.stroke();
+
+            if (other) {
+                sf.drawFace(ctx);
+                ctx.stroke();
+            }
             ctx.lineWidth = linewidth;
         }
     }
@@ -130,35 +158,32 @@ $(document).ready(function () {
         exaggerated = $('input:checkbox[name=exaggerated]:checked').val() == 'on';
         border = $('input:checkbox[name=border]:checked').val();
         ground = $('input:checkbox[name=ground]:checked').val();
-        bounce = $('input:checkbox[name=bounce]:checked').val();
         stationary = $('input:checkbox[name=stationary]:checked').val() == 'on';
         face = $('input:checkbox[name=face]:checked').val() == 'on';
+        other = $('input:checkbox[name=other]:checked').val() == 'on';
         //framerate = $('input:text[name=framerate]').val();
         framerate = parseInt($('#framerate').val());
         //linewidth = $('input:text[name=linewidth]').val();
         linewidth = parseInt($('#linewidth').val());
         //xshift = parseInt($('input:text[name=xshift]').val());
         xshift = parseInt($('#xshift').val());
-        if (bounce && action == 'run') {
-            switch (frame) {
-                case 0:
-                    y = y - 5;
-                    break;
-                case 1:
-                    y = y - 10;
-                    break;
-                case 2:
-                    y = y - 5;
-                    break;
-                case 3:
-                    break;
-            }
-        }
 
         sf = new StickFigure(x, y, width, height, exaggerated);
         sf.defaultAction = StickFigure.Running;
         sf.frame = currentFrame;
         sf.direction = direction;
+        sf.stationary = stationary;
+
+        if (other) {
+            var altX = canvasWidth - x - width;
+            console.log(altX)
+            sf2 = new StickFigure(altX, y, width, height, exaggerated);
+            sf2.defaultAction = StickFigure.Running;
+            sf2.frame = currentFrame;
+            sf2.direction = ! direction;
+            sf2.stationary = stationary;
+        }
+
 
         $('#figure-points').val(js_beautify(JSON.stringify(sf)));
     };
@@ -191,23 +216,22 @@ $(document).ready(function () {
         doFigureFrame();
     });
 
-    function animloop() {
+    function animationLoop() {
         if (running) {
             setTimeout(function () {
-                window.requestAnimationFrame(animloop);
-                // Drawing code goes here
+                window.requestAnimationFrame(animationLoop);
             }, 1000 / parseInt(framerate));
             doFigureFrame();
         }
-    }
-
-    ;
+    };
 
     var startRunning = function () {
         running = true;
-//        timerId = setInterval(drawFigure, 1);
-//                timerId = setInterval(drawFigure, parseInt(framerate));
-        animloop();
+//        timerId = setInterval(doFigureFrame, 1);
+                timerId = setInterval(doFigureFrame, parseInt(1000 / framerate));
+
+        //   requestAnimationFrame should be faster - having trouble with restarts
+        // animationLoop();
     };
 
     $('#play').click(function () {
@@ -230,6 +254,7 @@ $(document).ready(function () {
     $('input[type="radio"]').change(function () {
         action = $('input:radio[name=action]:checked').val();
         var actionFunc = StickFigure.Running;
+        sf.frame = 0;
         switch(action) {
             case "run":
                 sf.defaultAction = StickFigure.Running;
@@ -442,9 +467,15 @@ $(document).ready(function () {
         var speakValue = $('#speakValue').val();
         if (speakValue == '')
             speakValue = action;
-        console.log(speakValue)
-        sf.drawSpeechBubble(ctx, speakValue);
+
         ctx.strokeStyle = '#000';
+
+        sf.drawSpeechBubble(ctx, speakValue);
+        ctx.stroke();
+        if (other) {
+            sf2.drawSpeechBubble(ctx, speakValue);
+            ctx.stroke();
+        }
         ctx.stroke();
     });
 
