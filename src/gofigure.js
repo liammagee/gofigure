@@ -508,8 +508,8 @@ StickFigure = function(_x, _y, _width, _height, _exaggerated) {
     };
 
     this.generateCoordinates = function() {
-        this.hipX = Math.floor(this.originHipX + this.x);
-        this.hipY = Math.floor(this.originHipY + this.y);
+        this.hipX = Math.floor(this.originHipX);
+        this.hipY = Math.floor(this.originHipY);
 
         this.shoulderX = Math.floor(this.hipX + Math.cos( - this.torsoAngle) * this.torsoLength);
         this.shoulderY = Math.floor(this.hipY + Math.sin( - this.torsoAngle) * this.torsoLength);
