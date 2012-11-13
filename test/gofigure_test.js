@@ -177,6 +177,7 @@ $(document).ready(function () {
         sf.direction = direction;
         sf.stationary = stationary;
 
+
         if (other) {
             var altX =  canvasWidth / 2 - width;
             sf2 = new StickFigure(altX, height * .4, width, height, exaggerated);
