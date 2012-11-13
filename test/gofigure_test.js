@@ -40,7 +40,7 @@ var framerate = 10;
 var linewidth = 3;
 var xshift = 20;
 var action = 'run';
-var action = 'run';
+var style = 'human';
 var direction = 0;
 var border = true;
 var ground = true;
@@ -154,6 +154,7 @@ $(document).ready(function () {
         var y = defaultY;
         canvasWidth = $('#gofigure-canvas').width();
         action = $('input:radio[name=action]:checked').val();
+        style = $('input:radio[name=style]:checked').val();
         direction = $('input:checkbox[name=direction]:checked').val() == 'on' ? 1 : 0;
         exaggerated = $('input:checkbox[name=exaggerated]:checked').val() == 'on';
         border = $('input:checkbox[name=border]:checked').val();
@@ -170,13 +171,13 @@ $(document).ready(function () {
 
         sf = new StickFigure(x, y, width, height, exaggerated);
         sf.defaultAction = StickFigure.Running;
+        sf.style = style;
         sf.frame = currentFrame;
         sf.direction = direction;
         sf.stationary = stationary;
 
         if (other) {
             var altX = canvasWidth - x - width;
-            console.log(altX)
             sf2 = new StickFigure(altX, y, width, height, exaggerated);
             sf2.defaultAction = StickFigure.Running;
             sf2.frame = currentFrame;
@@ -248,37 +249,47 @@ $(document).ready(function () {
         }
     });
 
-    var resolveAction = function(action) {
+    var setAction = function(figure, action) {
+        switch(action) {
+            case "run":
+                figure.defaultAction = StickFigure.Running;
+                break;
+            case "bounce":
+                figure.defaultAction = StickFigure.RunAndBounce;
+                break;
+            case "walk":
+                figure.defaultAction = StickFigure.Walking;
+                break;
+            case "expire":
+                figure.defaultAction = StickFigure.Expire;
+                break;
+            case "explode":
+                figure.defaultAction = StickFigure.Explode;
+                break;
+            case "stand":
+                figure.defaultAction = StickFigure.Stand;
+                break;
+            case "speak":
+                figure.defaultAction = StickFigure.Speak;
+                break;
+        }
     }
 
     $('input[type="radio"]').change(function () {
         action = $('input:radio[name=action]:checked').val();
+        style = $('input:radio[name=style]:checked').val();
         var actionFunc = StickFigure.Running;
         sf.frame = 0;
-        switch(action) {
-            case "run":
-                sf.defaultAction = StickFigure.Running;
-                break;
-            case "bounce":
-                sf.defaultAction = StickFigure.RunAndBounce;
-                break;
-            case "walk":
-                sf.defaultAction = StickFigure.Walking;
-                break;
-            case "expire":
-                sf.defaultAction = StickFigure.Expire;
-                break;
-            case "explode":
-                sf.defaultAction = StickFigure.Explode;
-                break;
-            case "stand":
-                sf.defaultAction = StickFigure.Stand;
-                break;
-            case "speak":
-                sf.defaultAction = StickFigure.Speak;
-                break;
+        sf.style = style;
+        setAction(sf, action);
+        if (other) {
+            sf2.frame = sf.frame;
+            sf2.style = sf.style;
+            sf2.defaultAction = sf.defaultAction;
         }
     });
+
+
 
     $('input[type="checkbox"]').change(function () {
         constructFigure();
@@ -473,8 +484,7 @@ $(document).ready(function () {
         sf.drawSpeechBubble(ctx, speakValue);
         ctx.stroke();
         if (other) {
-            sf2.drawSpeechBubble(ctx, speakValue);
-            ctx.stroke();
+            setAction(sf2, speakValue);
         }
         ctx.stroke();
     });

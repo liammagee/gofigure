@@ -54,8 +54,43 @@ StickFigure = function(_x, _y, _width, _height, _exaggerated) {
         context.lineTo(this.neckX, this.neckY);
 
         // Head
-        context.moveTo(this.headX + this.headRadius, this.headY);
-        context.arc(this.headX, this.headY, this.headRadius, 0, Math.PI * 2, false);
+        switch (this.style) {
+            case 'robot':
+                this.bHandAngle = this.bElbowAngle;
+                this.fHandAngle = this.fElbowAngle;
+                this.bElbowAngle = this.bShoulderAngle;
+                this.fElbowAngle = this.fShoulderAngle;
+                this.bKneeAngle = this.bHipAngle;
+                this.fKneeAngle = this.fHipAngle;
+                this.generateCoordinates();
+
+//                this.headX = this.neckX;
+//                this.headY = this.neckY - this.headRadius;
+                //context.moveTo(this.neckX, this.neckY);
+//                context.moveTo(this.headX + this.headRadius, this.headY );
+                //context.lineTo(this.headX, this.headY);
+                context.moveTo(this.headX, this.headY + this.headRadius);
+                context.lineTo(this.headX - this.headRadius, this.headY + this.headRadius);
+                context.moveTo(this.headX - this.headRadius, this.headY + this.headRadius);
+                context.lineTo(this.headX - this.headRadius, this.headY - this.headRadius);
+                context.moveTo(this.headX - this.headRadius, this.headY - this.headRadius);
+                context.lineTo(this.headX + this.headRadius, this.headY - this.headRadius);
+                context.moveTo(this.headX + this.headRadius, this.headY - this.headRadius);
+                context.lineTo(this.headX + this.headRadius, this.headY + this.headRadius);
+                context.moveTo(this.headX + this.headRadius, this.headY + this.headRadius);
+                context.lineTo(this.headX, this.headY + this.headRadius);
+                break;
+            case 'zombie':
+                this.headAngle -= Math.PI / 2;
+                this.generateCoordinates();
+                context.moveTo(this.headX + this.headRadius, this.headY);
+                context.arc(this.headX, this.headY, this.headRadius, 0, Math.PI * 2, false);
+                break;
+            case 'human':
+            default:
+                context.moveTo(this.headX + this.headRadius, this.headY);
+                context.arc(this.headX, this.headY, this.headRadius, 0, Math.PI * 2, false);
+        }
 
         // Face
         //this.drawFace(context);
@@ -120,12 +155,14 @@ StickFigure = function(_x, _y, _width, _height, _exaggerated) {
                 mouthEndX = this.headX - mouthEndX;
                 mouthStartX = this.headX - mouthStartX;
             }
+            context.save();
             context.beginPath();
             context.moveTo(eyeX, eyeY);
             context.arc(eyeX, eyeY, eyeSize, 0, Math.PI * 2, false);
             context.moveTo(mouthEndX, mouthEndY);
             context.lineTo(mouthStartX, mouthStartY);
             context.closePath();
+            context.restore();
     };
 
     this.drawSpeechBubble = function(context, message) {
