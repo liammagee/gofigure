@@ -179,7 +179,6 @@ $(document).ready(function () {
 
         if (other) {
             var altX =  canvasWidth / 2 - width;
-            console.log(canvasWidth, altX)
             sf2 = new StickFigure(altX, height * .4, width, height, exaggerated);
             sf2.windAroundCanvas = true;
             sf2.defaultAction = StickFigure.Running;
