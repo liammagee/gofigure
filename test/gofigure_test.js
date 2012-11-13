@@ -169,7 +169,8 @@ $(document).ready(function () {
         //xshift = parseInt($('input:text[name=xshift]').val());
         xshift = parseInt($('#xshift').val());
 
-        sf = new StickFigure(x, y, width, height, exaggerated);
+        sf = new StickFigure(width  * .2, height * .4, width, height, exaggerated);
+        sf.windAroundCanvas = true;
         sf.defaultAction = StickFigure.Running;
         sf.style = style;
         sf.frame = currentFrame;
@@ -177,8 +178,10 @@ $(document).ready(function () {
         sf.stationary = stationary;
 
         if (other) {
-            var altX = canvasWidth - x - width;
-            sf2 = new StickFigure(altX, y, width, height, exaggerated);
+            var altX =  canvasWidth / 2 - width;
+            console.log(canvasWidth, altX)
+            sf2 = new StickFigure(altX, height * .4, width, height, exaggerated);
+            sf2.windAroundCanvas = true;
             sf2.defaultAction = StickFigure.Running;
             sf2.frame = currentFrame;
             sf2.direction = ! direction;

@@ -34,6 +34,17 @@ StickFigure = function(_x, _y, _width, _height, _exaggerated) {
 
 
     this.drawFigure = function(context) {
+        if (this.windAroundCanvas) {
+            if (this.hipX > context.canvas.width) {
+                this.x = 0;
+                this.generateCoordinates();
+            }
+            else if (this.hipX < 0) {
+                this.x = context.canvas.width - this.originHipX;
+                this.generateCoordinates();
+            }
+        }
+
         context.beginPath();
 
         // Torso
@@ -45,8 +56,39 @@ StickFigure = function(_x, _y, _width, _height, _exaggerated) {
         context.lineTo(this.neckX, this.neckY);
 
         // Head
-        context.moveTo(this.headX + this.headRadius, this.headY);
-        context.arc(this.headX, this.headY, this.headRadius, 0, Math.PI * 2, false);
+        switch (this.style) {
+            case 'robot':
+                this.bHandAngle = this.bElbowAngle;
+                this.fHandAngle = this.fElbowAngle;
+                this.bElbowAngle = this.bShoulderAngle;
+                this.fElbowAngle = this.fShoulderAngle;
+                this.bKneeAngle = this.bHipAngle;
+                this.fKneeAngle = this.fHipAngle;
+                this.generateCoordinates();
+
+                context.moveTo(this.headX, this.headY + this.headRadius);
+                context.lineTo(this.headX - this.headRadius, this.headY + this.headRadius);
+                context.moveTo(this.headX - this.headRadius, this.headY + this.headRadius);
+                context.lineTo(this.headX - this.headRadius, this.headY - this.headRadius);
+                context.moveTo(this.headX - this.headRadius, this.headY - this.headRadius);
+                context.lineTo(this.headX + this.headRadius, this.headY - this.headRadius);
+                context.moveTo(this.headX + this.headRadius, this.headY - this.headRadius);
+                context.lineTo(this.headX + this.headRadius, this.headY + this.headRadius);
+                context.moveTo(this.headX + this.headRadius, this.headY + this.headRadius);
+                context.lineTo(this.headX, this.headY + this.headRadius);
+                break;
+            case 'zombie':
+                this.headAngle -= Math.PI / 2;
+                this.generateCoordinates();
+
+                context.moveTo(this.headX + this.headRadius, this.headY);
+                context.arc(this.headX, this.headY, this.headRadius, 0, Math.PI * 2, false);
+                break;
+            case 'human':
+            default:
+                context.moveTo(this.headX + this.headRadius, this.headY);
+                context.arc(this.headX, this.headY, this.headRadius, 0, Math.PI * 2, false);
+        }
 
         // Face
         //this.drawFace(context);
@@ -111,12 +153,14 @@ StickFigure = function(_x, _y, _width, _height, _exaggerated) {
             mouthEndX = this.headX - mouthEndX;
             mouthStartX = this.headX - mouthStartX;
         }
+        context.save();
         context.beginPath();
         context.moveTo(eyeX, eyeY);
         context.arc(eyeX, eyeY, eyeSize, 0, Math.PI * 2, false);
         context.moveTo(mouthEndX, mouthEndY);
         context.lineTo(mouthStartX, mouthStartY);
         context.closePath();
+        context.restore();
     };
 
     this.drawSpeechBubble = function(context, message) {
@@ -367,7 +411,7 @@ StickFigure = function(_x, _y, _width, _height, _exaggerated) {
         workingAngles = workingAngles.map(function(e) { return that.radians(e) });
         this.updateFromVector(workingAngles);
 
-        if (! this.stationary) {
+        if (! stationary) {
             if (cumulative) {
                 this.shiftX(currentFrame.x);
                 this.shiftY(currentFrame.y);
@@ -466,6 +510,8 @@ StickFigure = function(_x, _y, _width, _height, _exaggerated) {
     this.generateCoordinates = function() {
         this.hipX = Math.floor(this.originHipX + this.x);
         this.hipY = Math.floor(this.originHipY + this.y);
+        //this.hipX = Math.floor(this.originHipX + this.x);
+//        this.hipY = Math.floor(this.originHipY + this.y);
 
         this.shoulderX = Math.floor(this.hipX + Math.cos( - this.torsoAngle) * this.torsoLength);
         this.shoulderY = Math.floor(this.hipY + Math.sin( - this.torsoAngle) * this.torsoLength);
@@ -818,9 +864,12 @@ StickFigure = function(_x, _y, _width, _height, _exaggerated) {
         , this.frame = 0
         , this.maxFrames = 4
         , this.frameSet = undefined
-        , this.direction = 0;
-    this.generateDimensions();
+        , this.direction = 0
+        , this.stationary = false
+        , this.windAroundCanvas = false;
 
+
+    this.generateDimensions();
 };
 
 
@@ -833,12 +882,6 @@ StickFigure.Running = function() {
     var frame4  = $V([15, 0, 0,   30, 30, 30, -30, -30, -30,          30, 15, 15, -30, -15, -15   ]);
     var frame5  = $V([15, 0, 0,   30, 30, 30, -30, -30, -30,          30, 15, 15, -30, -15, -15   ]);
     var frames  = [frame0, frame1, frame2, frame3, frame4, frame5].map(function(frame) { return new Frame(10, 0, frame)});
-    // Add bouncing
-    for (var i = 0; i < frames.length; i++) {
-        var frame = frames[i];
-//			var bounce = Math.abs((frames.length / 2) - i) * 5;
-//			frame.y = bounce;
-    }
     return new FrameSet(frames, true);
 }
 
@@ -868,9 +911,7 @@ StickFigure.Stand = function() {
     var frame0  = $V([0, 0, 0,   0, 0, -90, 0, 0, 90,    0, 0, -90, 0, 0, 90]);
     var frames  = [frame0, frame0].map(function(frame) { return new Frame(0, 0, frame)});
     return new FrameSet(frames, false);
-}
-
-
+};
 
 
 // Exploding
