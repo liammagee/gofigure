@@ -411,7 +411,7 @@ StickFigure = function(_x, _y, _width, _height, _exaggerated) {
         workingAngles = workingAngles.map(function(e) { return that.radians(e) });
         this.updateFromVector(workingAngles);
 
-        if (! stationary) {
+        if (! this.stationary) {
             if (cumulative) {
                 this.shiftX(currentFrame.x);
                 this.shiftY(currentFrame.y);
