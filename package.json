@@ -1,13 +1,17 @@
 {
   "name": "GoFigure",
-  "version": "0.1.0",
-    "dependencies": {
-        "express": "2.5.x"
-    },
-    "engines": {
-        "node": "0.8.x",
-        "npm": "1.1.x"
-    },
+  "description": "GoFigure provides a set of routines for canvas-based stick figures",
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/liammagee/gofigure.git"
+  },
+  "author": "Liam Magee <liam.magee@gmail.com>",
+  "private": false,
+  "engines": {
+      "node": "0.10.x",
+      "npm": "1.3.x"
+  },
   "scripts": {
     "test": "grunt qunit"
   },
