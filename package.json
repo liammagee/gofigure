@@ -1,7 +1,7 @@
 {
   "name": "go-figure",
   "description": "GoFigure provides a set of routines for canvas-based stick figures",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "repository": {
     "type": "git",
     "url": "git://github.com/liammagee/gofigure.git"
@@ -14,6 +14,10 @@
   },
   "scripts": {
     "test": "grunt qunit"
+  },
+  "dependencies": {
+    "jquery": "2.1.0-beta3",
+    "sylvester": "0.0.21"
   },
   "devDependencies": {
     "grunt": "~0.3.11"

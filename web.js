@@ -16,7 +16,7 @@ app.listen(port, function() {
 });
 
 app.get('/', function(req, res) {
-    res.send('hello world');
-//    res.sendfile('/test/gofigure_test.html');
+    // res.send('hello world');
+   res.sendfile('/test/gofigure_test.html');
 });
 
