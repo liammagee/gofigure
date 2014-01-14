@@ -1074,3 +1074,14 @@ StickFigure.Expire = function() {
      this.generateCoordinates();
      */
 };
+
+exports.Frame = Frame;
+exports.FrameSet = FrameSet;
+exports.StickFigure = StickFigure;
+exports.StickFigure.Running = StickFigure.Running;
+exports.StickFigure.RunAndBounce = StickFigure.RunAndBounce;
+exports.StickFigure.Walking = StickFigure.Walking;
+exports.StickFigure.Stand = StickFigure.Stand;
+exports.StickFigure.Explode = StickFigure.Explode;
+exports.StickFigure.Expire = StickFigure.Expire;
+

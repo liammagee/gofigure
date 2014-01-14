@@ -1,7 +1,7 @@
 {
   "name": "go-figure",
   "description": "GoFigure provides a set of routines for canvas-based stick figures",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "repository": {
     "type": "git",
     "url": "git://github.com/liammagee/gofigure.git"
