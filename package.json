@@ -16,7 +16,7 @@
     "test": "grunt qunit"
   },
   "dependencies": {
-    "jquery": "2.1.0-beta3",
+    "jquery": "3.5.0",
     "sylvester": "0.0.21"
   },
   "devDependencies": {
